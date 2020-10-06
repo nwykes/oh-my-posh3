@@ -47,6 +47,7 @@
             "branch_gone_icon": "≢",
             "local_working_icon": "",
             "local_staged_icon": "",
+            "display_origin": true,
             "prefix": "<#26C6DA> </>"
           }
         },

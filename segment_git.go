@@ -16,6 +16,7 @@ type gitRepo struct {
 	branch     string
 	upstream   string
 	stashCount int
+	origin     string
 }
 
 type gitStatus struct {
@@ -47,6 +48,14 @@ const (
 	LocalStagingIcon Property = "local_staged_icon"
 	//DisplayStatus shows the status of the repository
 	DisplayStatus Property = "display_status"
+	//DisplayOrigin show the origin icon
+	DisplayOrigin Property = "display_origin"
+	// GithubIcon the icon to use when origin is Github
+	GithubIcon Property = "github_icon"
+	// BitbucketIcon the icon to use when origin is Bitbucket
+	BitbucketIcon Property = "bitbucket_icon"
+	// GitlabIcon the icon to use when origin is Gitlab
+	GitlabIcon Property = "gitlab_icon"
 )
 
 func (g *git) enabled() bool {
@@ -60,6 +69,10 @@ func (g *git) enabled() bool {
 func (g *git) string() string {
 	g.getGitStatus()
 	buffer := new(bytes.Buffer)
+	displayOrigin := g.props.getBool(DisplayOrigin, false)
+	if displayOrigin && g.repo.origin != "" {
+		buffer.WriteString(g.repo.origin)
+	}
 	// branchsymbol
 	buffer.WriteString(g.props.getString(BranchIcon, "Branch: "))
 	// branchName
@@ -109,10 +122,29 @@ func (g *git) getGitStatus() {
 		g.repo.behind, _ = strconv.Atoi(branchInfo["behind"])
 		g.repo.branch = branchInfo["local"]
 		g.repo.upstream = branchInfo["upstream"]
+		if 	g.props.getBool(DisplayOrigin, false) {
+			g.repo.origin = getOrigin(g)
+		}
 	} else {
 		g.repo.branch = g.getGitDetachedBranch()
 	}
 	g.repo.stashCount = g.getStashContext()
+}
+
+func getOrigin(g *git) string {
+	if g.repo.upstream == "" {
+		return ""
+	}
+	output := g.getGitOutputForCommand("remote", "get-url", strings.Split(g.repo.upstream, "/")[0])
+	if strings.Contains(output, "github") {
+		return g.props.getString(GithubIcon, "\uF09B") + " "
+	} else if strings.Contains(output, "bitbucket") {
+		return g.props.getString(BitbucketIcon, "\uF171") + " "
+	} else if strings.Contains(output, "gitlab") {
+		return g.props.getString(GitlabIcon, "\uF296") + " "
+	} else {
+		return ""
+	}
 }
 
 func (g *git) getGitOutputForCommand(args ...string) string {
