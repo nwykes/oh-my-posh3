@@ -138,6 +138,23 @@ func TestParseGitBranchInfoBehindandAhead(t *testing.T) {
 	assert.Equal(t, "1", got["ahead"])
 }
 
+func TestGetOrigin(t *testing.T){
+
+	env := new(MockedEnvironment)
+	props := &properties{
+		values: map[Property]interface{}{
+			DisplayOrigin: "display_origin",
+		},
+	}
+	env.On("runCommand", "git", []string{"remote", "get-url", "main/origin"}).Return("git@github.com:JanDeDobbeleer/oh-my-posh3.git")
+	g := &git{
+		env: env,
+		props: props,
+	}
+	got := g.getOrigin()
+	assert.NotEmpty(t, got)
+
+}
 // func TestGetGitStatus(t *testing.T) {
 // 	env := new(environment)
 // 	writer := gitWriter{

@@ -123,7 +123,7 @@ func (g *git) getGitStatus() {
 		g.repo.branch = branchInfo["local"]
 		g.repo.upstream = branchInfo["upstream"]
 		if 	g.props.getBool(DisplayOrigin, false) {
-			g.repo.origin = getOrigin(g)
+			g.repo.origin = g.getOrigin()
 		}
 	} else {
 		g.repo.branch = g.getGitDetachedBranch()
@@ -131,7 +131,7 @@ func (g *git) getGitStatus() {
 	g.repo.stashCount = g.getStashContext()
 }
 
-func getOrigin(g *git) string {
+func (g *git) getOrigin() string {
 	if g.repo.upstream == "" {
 		return ""
 	}
